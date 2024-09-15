@@ -1,4 +1,8 @@
-### Hi there 👋
+### I know Python, CSS, HTML, and some JavaScript.
+### Currently learning Java.
+
+### Planning on making a Discord Bot & my own website.
+### I will probably get into making Minecraft mods soon.
 
 <!--
 **BlazeXYZ/BlazeXYZ** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
