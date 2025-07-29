@@ -4,7 +4,7 @@ Minecraft server developer/manager.
 4+ years of experience.
 Worked on 7 servers in the past.
 
-Currently taking a break from servers.
+Currently taking a short break from working on servers.
 Feel free to contact me on Discord: "@blazexyz."
 
 <!--
