@@ -1,8 +1,11 @@
-### I know Python, CSS, HTML, and some JavaScript.
-### Currently learning Java.
+Java, Python, HTML, CSS, JavaScript.
 
-### Planning on making a Discord Bot & my own website.
-### I will probably get into making Minecraft mods soon.
+Minecraft server developer/manager.
+4+ years of experience.
+Worked on 7 servers in the past.
+
+Currently taking a break from servers.
+Feel free to contact me on Discord: "@blazexyz."
 
 <!--
 **BlazeXYZ/BlazeXYZ** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
