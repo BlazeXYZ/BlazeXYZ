@@ -1,60 +1,43 @@
 <div align="center">
 
-<a href="https://blazexyz.com"><img src="assets/banner.svg" alt="BLAZE in dot lettering beside a black hole. QA, bug hunting, security tooling. I test things until they break, then help fix them." width="100%"></a>
+<a href="https://blazexyz.com"><img src="assets/banner.svg" width="100%" alt="BLAZE, in dot lettering, beside a black hole. QA, bug hunting and security tooling. I test things until they break, then help fix them."></a>
 
+<a href="https://blazexyz.com"><img src="assets/link-site.svg" width="32%" alt="Website: blazexyz.com"></a>
+<a href="https://discord.com/users/766780065198899210"><img src="assets/link-discord.svg" width="32%" alt="Discord"></a>
+<a href="https://exypnos.one/christian-block"><img src="assets/link-exypnos.svg" width="32%" alt="Exypnos One: board member"></a>
+
+<img src="assets/about.svg" width="100%" alt="About. Role: Board member, Exypnos One Corp. Focus: QA, bug hunting, counsel. Building: security tools for defenders. Likes: dot art, black holes, shaders, web design. Also: Minecraft modding. Pronouns: she / her.">
+
+<img src="assets/stats.svg" width="100%" alt="4 security tools, 148 tests in CI, 0 dependencies, MIT licensed">
+
+<img src="assets/header-toolkit.svg" width="100%" alt="Security toolkit: four tools, each aimed at a different layer of defense">
+
+<a href="https://github.com/BlazeXYZ/authtrail"><img src="assets/card-authtrail.svg" width="49%" alt="authtrail: finds the one successful login hiding in thousands of failures, then rebuilds what the attacker did next as a timeline"></a>
+<a href="https://github.com/BlazeXYZ/mailsleuth"><img src="assets/card-mailsleuth.svg" width="49%" alt="MailSleuth: phishing triage for SOC analysts. Flags CEO fraud even when SPF, DKIM and DMARC pass"></a>
+<a href="https://github.com/BlazeXYZ/portscan-fingerprint"><img src="assets/card-portscan.svg" width="49%" alt="portscan-fingerprint: async scanner that names the software on each port, reads TLS certificates and matches versions to CVEs by CPE"></a>
+<a href="https://github.com/BlazeXYZ/pwaudit"><img src="assets/card-pwaudit.svg" width="49%" alt="pwaudit: prices passwords by real guess cost and checks breaches while only 5 hash characters leave the machine"></a>
+
+<img src="assets/header-chain.svg" width="100%" alt="One attack, four tools: together they follow a single intrusion">
+
+<img src="assets/chain.svg" width="100%" alt="Attack chain: a phishing email (MailSleuth), then a stolen or weak password (pwaudit), then an exposed service (portscan-fingerprint), then a login on the server (authtrail)">
+
+</div>
+
+<details>
+<summary><b>Project details and live CI status</b></summary>
 <br>
 
-[![website](https://img.shields.io/badge/blazexyz.com-0a070d?style=for-the-badge&logo=googlechrome&logoColor=db94ed)](https://blazexyz.com)
-[![discord](https://img.shields.io/badge/discord-0a070d?style=for-the-badge&logo=discord&logoColor=db94ed)](https://discord.com/users/766780065198899210)
-[![exypnos](https://img.shields.io/badge/exypnos_one-0a070d?style=for-the-badge&logoColor=db94ed)](https://exypnos.one/christian-block)
-
-</div>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-```yaml
-name:      Blaze
-pronouns:  she / her
-role:      Board member, Exypnos One Corp.
-focus:     QA, bug hunting, counsel
-building:  security tools for defenders · blazexyz.com · a Minecraft mod
-likes:     dot art, black holes, shaders, web design, minecraft modding
-```
-
-## Security toolkit
-
-Four small, dependency-free Python tools, each aimed at a different layer of defense. Each one goes past the obvious answer: an open port isn't a finding until you match it to a CVE, passing DMARC doesn't make an email safe, a strength meter's "entropy" is usually wrong, and a thousand failed logins matter less than the one that succeeded.
-
-<div align="center">
-
-<a href="https://github.com/BlazeXYZ/authtrail"><img src="assets/card-authtrail.svg" alt="authtrail: finds the one successful login hiding in thousands of failures, and what came next" width="49%"></a>
-<a href="https://github.com/BlazeXYZ/mailsleuth"><img src="assets/card-mailsleuth.svg" alt="MailSleuth: phishing triage that catches business email compromise even when SPF, DKIM and DMARC pass" width="49%"></a>
-<a href="https://github.com/BlazeXYZ/portscan-fingerprint"><img src="assets/card-portscan.svg" alt="portscan-fingerprint: async scanner that fingerprints services, reads TLS certificates and matches CVEs by CPE" width="49%"></a>
-<a href="https://github.com/BlazeXYZ/pwaudit"><img src="assets/card-pwaudit.svg" alt="pwaudit: password strength by real guess cost, plus k-anonymity breach checks" width="49%"></a>
-
-</div>
-
-### One attack, four tools
-
-Together they follow a single intrusion from start to finish:
-
-```mermaid
-%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#0a070d", "primaryTextColor": "#f3ecf8", "primaryBorderColor": "#db94ed", "lineColor": "#db94ed", "fontFamily": "monospace"}}}%%
-flowchart LR
-    A["Phishing email<br><b>MailSleuth</b><br>is it phishing?"] --> B["Stolen or weak password<br><b>pwaudit</b><br>guessable? breached?"]
-    B --> C["Exposed SSH service<br><b>portscan-fingerprint</b><br>what's open and vulnerable?"]
-    C --> D["Login on the server<br><b>authtrail</b><br>did they get in? what next?"]
-```
-
-| Project | Layer | The interesting part | Status |
+| Project | Layer | The interesting part | CI |
 |---|---|---|---|
 | [**authtrail**](https://github.com/BlazeXYZ/authtrail) | Host logs | Correlates a brute-forced login with the backdoor account and wiped logs that followed, as one incident timeline | [![tests](https://github.com/BlazeXYZ/authtrail/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/authtrail/actions/workflows/tests.yml) |
 | [**MailSleuth**](https://github.com/BlazeXYZ/mailsleuth) | Email | Flags a CEO-fraud email that passes SPF, DKIM *and* DMARC, because the attacker owns the lookalike domain | [![tests](https://github.com/BlazeXYZ/mailsleuth/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/mailsleuth/actions/workflows/tests.yml) |
 | [**portscan-fingerprint**](https://github.com/BlazeXYZ/portscan-fingerprint) | Network | CPE matching found 39 real CVEs for OpenSSH 8.2p1 where keyword search found 2; includes a hand-written X.509 parser | [![tests](https://github.com/BlazeXYZ/portscan-fingerprint/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/portscan-fingerprint/actions/workflows/tests.yml) |
 | [**pwaudit**](https://github.com/BlazeXYZ/pwaudit) | Credentials | Prices passwords by what an attacker would spend; breach checks send only 5 of 40 hash characters | [![tests](https://github.com/BlazeXYZ/pwaudit/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/pwaudit/actions/workflows/tests.yml) |
 
+</details>
+
 <details>
-<summary><b>What they have in common</b></summary>
+<summary><b>What the four tools have in common</b></summary>
 <br>
 
 - **Standard library only.** No `pip install`, no supply chain. Each tool includes its own parsers: DER certificates, syslog, email headers.
@@ -65,29 +48,19 @@ flowchart LR
 
 </details>
 
-## Also building
-
-| | |
-|---|---|
-| 🌌 **[blazexyz.com](https://blazexyz.com)** | My site: a three.js black hole, galaxy and highway behind liquid-glass panels, with dot-matrix type and live Discord presence. Next.js, React Three Fiber, React Spring, custom GLSL. |
-| ⛏️ **Shadow Slave** | A Fabric mod for Minecraft. |
-
-## Tools I reach for
-
 <div align="center">
 
-![Python](https://img.shields.io/badge/python-0a070d?style=flat-square&logo=python&logoColor=db94ed)
-![TypeScript](https://img.shields.io/badge/typescript-0a070d?style=flat-square&logo=typescript&logoColor=db94ed)
-![Next.js](https://img.shields.io/badge/next.js-0a070d?style=flat-square&logo=nextdotjs&logoColor=db94ed)
-![React](https://img.shields.io/badge/react-0a070d?style=flat-square&logo=react&logoColor=db94ed)
-![three.js](https://img.shields.io/badge/three.js-0a070d?style=flat-square&logo=threedotjs&logoColor=db94ed)
-![GLSL](https://img.shields.io/badge/glsl-0a070d?style=flat-square&logo=opengl&logoColor=db94ed)
-![Java](https://img.shields.io/badge/java-0a070d?style=flat-square&logo=openjdk&logoColor=db94ed)
-![GitHub Actions](https://img.shields.io/badge/github_actions-0a070d?style=flat-square&logo=githubactions&logoColor=db94ed)
-![MITRE ATT&CK](https://img.shields.io/badge/mitre_att%26ck-0a070d?style=flat-square)
+<img src="assets/header-building.svg" width="100%" alt="Also building: graphics, the web, and games">
+
+<a href="https://blazexyz.com"><img src="assets/build-site.svg" width="49%" alt="blazexyz.com: my site, a three.js black hole, galaxy and highway behind liquid-glass panels, with dot-matrix type and live Discord presence"></a>
+<img src="assets/build-shadowslave.svg" width="49%" alt="Shadow Slave: a Fabric mod for Minecraft">
+
+<img src="assets/header-stack.svg" width="100%" alt="Tools I reach for: what these projects are made of">
+
+<img src="assets/stack.svg" width="100%" alt="Security: Python, asyncio, MITRE ATT&CK, NVD and CPE, Linux logs. Web and graphics: TypeScript, Next.js, React, three.js, GLSL. Quality: unittest, Vitest, GitHub Actions, mutation checks.">
+
+<a href="https://blazexyz.com"><img src="assets/footer.svg" width="100%" alt="Thanks for stopping by. blazexyz.com"></a>
+
+<sub>Security tools here are for systems you own or are authorized to test.</sub>
 
 </div>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-<div align="center"><sub>Security tools here are for systems you own or are authorized to test.</sub></div>
