@@ -767,7 +767,7 @@ ABOUT = [("role", "Board member, Exypnos One Corp."),
          ("likes", "dot art · black holes · shaders"),
          ("also", "web design · minecraft modding")]
 
-STATS = [("10", "public projects"), ("7", "security & privacy"), ("219", "unit tests"), ("MIT", "licensed")]
+STATS = [("10", "public projects"), ("7", "security & privacy"), ("221", "unit tests"), ("MIT", "licensed")]
 
 PROJECTS = {
     "authtrail": dict(
@@ -833,7 +833,7 @@ MORE = {
         lines=["Records terminal sessions and turns them", "into small animated SVGs that play",
                "right inside a GitHub README."],
         highlight="sample SVG: 53.8 KB → 26.8 KB",
-        tags=["VT emulator", "SVG", "CSS"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "35")]),
+        tags=["VT emulator", "SVG", "CSS"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "37")]),
 }
 
 CHAIN = [("01", "INBOX", "mail", "MailSleuth", "is it phishing?"),

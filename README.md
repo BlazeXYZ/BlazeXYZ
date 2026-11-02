@@ -7,7 +7,7 @@
 <p>
 <a href="https://blazexyz.com"><img src="assets/banner.svg" width="100%" alt="BLAZEXYZ, in dot lettering, beside a black hole. QA, bug hunting and security tooling. I test things until they break, then help fix them."></a>
 <a href="https://blazexyz.com"><img src="assets/link-site.svg" width="33.33%" alt="Website: blazexyz.com"></a><a href="https://discord.com/users/766780065198899210"><img src="assets/link-discord.svg" width="33.33%" alt="Discord: say hi"></a><a href="https://exypnos.one/christian-block"><img src="assets/link-exypnos.svg" width="33.33%" alt="Exypnos One: board member"></a>
-<img src="assets/about.svg" width="100%" alt="About. Role: Board member, Exypnos One Corp. Focus: QA, bug hunting, counsel. Building: security tools for defenders. Likes: dot art, black holes, shaders. Also: web design, Minecraft modding. 10 public projects, 7 security and privacy tools, 219 unit tests, MIT licensed.">
+<img src="assets/about.svg" width="100%" alt="About. Role: Board member, Exypnos One Corp. Focus: QA, bug hunting, counsel. Building: security tools for defenders. Likes: dot art, black holes, shaders. Also: web design, Minecraft modding. 10 public projects, 7 security and privacy tools, 221 unit tests, MIT licensed.">
 </p>
 
 <p>
@@ -45,7 +45,7 @@
 | [**Fingerprint Mirror**](https://github.com/BlazeXYZ/fingerprint-mirror) | Privacy | 20 collectors and a stable hash that survives private windows; detects browsers that randomize canvas and audio | no tests yet | [live demo ↗](https://blazexyz.com/fingerprint-mirror/) |
 | [**Regex Replay**](https://github.com/BlazeXYZ/regex-replay) | Parsers | A hand-written backtracking engine, checked against `RegExp` on 4,000 fuzzed cases, that shows ReDoS step by step | [![tests](https://github.com/BlazeXYZ/regex-replay/actions/workflows/test.yml/badge.svg)](https://github.com/BlazeXYZ/regex-replay/actions/workflows/test.yml) | — |
 | [**Pathfinder Playground**](https://github.com/BlazeXYZ/pathfinding-playground) | Algorithms | Six algorithms on real streets; every optimal one matches Dijkstra on 100 random routes | 9 tests, `npm test` | [live demo ↗](https://blazexyz.com/pathfinding-playground/) |
-| [**termreel**](https://github.com/BlazeXYZ/termreel) | Dev tools | Its own VT emulator and a CSS filmstrip; prefix chaining and a separate cursor track halved the sample SVG | 35 tests | — |
+| [**termreel**](https://github.com/BlazeXYZ/termreel) | Dev tools | Its own VT emulator and a CSS filmstrip; prefix chaining and a separate cursor track halved the sample SVG | 37 tests | — |
 
 </details>
 
