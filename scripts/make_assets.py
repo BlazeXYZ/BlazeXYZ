@@ -1,20 +1,29 @@
 """Generate every SVG panel used by the profile README.
 
-The look follows blazexyz.com: a near-black violet background, a pink-violet
-accent, dot-matrix art, liquid-glass panels and a black hole. GitHub shows these
-files through <img>, so they can't load web fonts or scripts: lettering and icons
-are drawn as dots, and animation is plain CSS that stops for visitors who prefer
-reduced motion.
+The look follows blazexyz.com: everything is drawn in dots on a near-black violet ground,
+lettering uses the site's Exypnos dot font with its pale-pink-to-violet gradient, and each
+panel wears the site's camera HUD (corner brackets, solid tags, pips, readouts, a barcode).
+The three scenes from the site appear too: the black hole up top, the spiral galaxy behind
+the about panel, and the night highway in the footer.
+
+GitHub shows these files through <img>, so they can't load web fonts or scripts. Lettering
+that matters is drawn as dots, and animation is plain CSS that stops for visitors who prefer
+reduced motion. Dense dot fields are single paths of zero-length round-capped segments,
+which keeps the files small.
 
     python scripts/make_assets.py
 
-Edit the content in the PROJECTS / BUILDING / ABOUT / STACK tables near the bottom.
+Edit the content in the tables near the bottom: ABOUT, PROJECTS, BUILDING, STACK and so on.
 """
 
 import math
 import random
+import sys
 from html import escape
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from dotfont import GLYPHS as DOT, RADIUS as DOT_R, SPACE as DOT_SPACE  # noqa: E402
 
 OUT = Path(__file__).resolve().parent.parent / "assets"
 
@@ -23,38 +32,43 @@ BG2 = "#140d1a"
 INK = "#f3ecf8"
 MID = "#b9adc4"
 LO = "#7d7088"
+PALE = "#fbe6ff"
 ACCENT = "#db94ed"
 VIOLET = "#ee15ee"
 MONO = "'DM Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
 CHAR = 0.6          # monospace advance, as a fraction of font size
 
-# 5x7 dot font, capitals only, like the site's {{dot}} text.
-GLYPHS = {
-    "A": ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
-    "B": ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
-    "E": ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
-    "L": ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
-    "Z": ["11111", "00001", "00010", "00100", "01000", "10000", "11111"],
-}
+# Every panel is drawn on a 1200-unit-wide grid and shown at the README's full width, so
+# one unit renders the same size everywhere and this one type scale holds across files.
+# GitHub shows the README at roughly 0.65x, so nothing that needs reading goes below 14.
+W = 1200
+GAP = 16            # gutter between cards that share a row
+RADIUS = 18         # panel corner radius, the site's --radius
+LABEL = 14          # spaced uppercase labels
+SMALL = 15
+BODY = 17
+LEAD = 20
 
 STYLE = (
     f".t{{font-family:{MONO}}}"
-    f".d{{fill:{INK};animation:glint 7s ease-in-out infinite}}"
     ".tw{animation:tw 4s ease-in-out infinite}"
     ".spin{transform-box:view-box;animation:spin linear infinite}"
     ".pulse{animation:pulse 4s ease-in-out infinite}"
     ".blink{animation:blink 1.2s steps(1) infinite}"
     ".sweep{transform-box:view-box;animation:spin 6s linear infinite}"
     ".travel{animation:travel 7s cubic-bezier(.45,0,.55,1) infinite}"
+    ".orbit{animation:orbit linear infinite}"
+    ".shine{animation:shine 9s ease-in-out infinite}"
     ".scan{animation:scan 9s linear infinite}"
-    f"@keyframes glint{{0%,84%,100%{{fill:{INK}}}90%{{fill:{ACCENT}}}}}"
     "@keyframes tw{0%,100%{opacity:.12}50%{opacity:.9}}"
     "@keyframes spin{to{transform:rotate(360deg)}}"
     "@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}"
     "@keyframes blink{0%{opacity:1}50%{opacity:0}}"
     "@keyframes travel{0%{transform:translateX(0);opacity:0}6%{opacity:1}94%{opacity:1}"
     "100%{transform:translateX(var(--dx));opacity:0}}"
-    "@keyframes scan{0%{transform:translateY(-40px)}100%{transform:translateY(360px)}}"
+    "@keyframes orbit{to{stroke-dashoffset:-360}}"
+    "@keyframes shine{0%{transform:translateX(0)}45%,100%{transform:translateX(var(--sw))}}"
+    "@keyframes scan{0%{transform:translateY(-80px)}100%{transform:translateY(var(--sh,460px))}}"
     "@media (prefers-reduced-motion:reduce){*{animation:none!important}}"
 )
 
@@ -62,9 +76,9 @@ DEFS = (
     f'<radialGradient id="glow"><stop offset="0" stop-color="{VIOLET}" stop-opacity=".38"/>'
     f'<stop offset=".45" stop-color="{ACCENT}" stop-opacity=".13"/><stop offset="1" stop-color="{BG}" stop-opacity="0"/>'
     '</radialGradient>'
-    f'<radialGradient id="neb1" cx=".2" cy=".1" r=".7"><stop offset="0" stop-color="{VIOLET}" stop-opacity=".16"/>'
+    f'<radialGradient id="neb1" cx=".15" cy="0" r=".8"><stop offset="0" stop-color="{VIOLET}" stop-opacity=".18"/>'
     f'<stop offset="1" stop-color="{BG}" stop-opacity="0"/></radialGradient>'
-    f'<radialGradient id="neb2" cx=".9" cy="1" r=".6"><stop offset="0" stop-color="{ACCENT}" stop-opacity=".12"/>'
+    f'<radialGradient id="neb2" cx=".92" cy="1" r=".7"><stop offset="0" stop-color="{ACCENT}" stop-opacity=".13"/>'
     f'<stop offset="1" stop-color="{BG}" stop-opacity="0"/></radialGradient>'
     '<linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">'
     '<stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset=".18" stop-color="#fff" stop-opacity=".045"/>'
@@ -75,8 +89,10 @@ DEFS = (
     f'<linearGradient id="fade" x1="0" x2="1"><stop offset="0" stop-color="{ACCENT}" stop-opacity="0"/>'
     f'<stop offset=".5" stop-color="{ACCENT}" stop-opacity=".9"/><stop offset="1" stop-color="{ACCENT}" stop-opacity="0"/>'
     '</linearGradient>'
+    '<linearGradient id="band" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/>'
+    '<stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
     f'<linearGradient id="scanline" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{ACCENT}" stop-opacity="0"/>'
-    f'<stop offset=".5" stop-color="{ACCENT}" stop-opacity=".07"/><stop offset="1" stop-color="{ACCENT}" stop-opacity="0"/>'
+    f'<stop offset=".5" stop-color="{ACCENT}" stop-opacity=".08"/><stop offset="1" stop-color="{ACCENT}" stop-opacity="0"/>'
     '</linearGradient>'
     '<filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>'
     '<filter id="bloom" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.2" result="b"/>'
@@ -86,113 +102,261 @@ DEFS = (
 
 # --------------------------------------------------------------------------- primitives
 
-def svg(w, h, body, title):
+def svg(w, h, body, title, defs=""):
     label = f"<title>{escape(title)}</title>" if title else ""
     role = 'role="img"' if title else 'aria-hidden="true"'
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" {role}>'
-            f"{label}<defs><style>{STYLE}</style>{DEFS}</defs>{body}</svg>\n")
+            f"{label}<defs><style>{STYLE}</style>{DEFS}{defs}</defs>{body}</svg>\n")
 
 
-def text(x, y, s, size, fill, anchor="start", weight=None, spacing=None, opacity=None, cls="t"):
-    extra = (f' font-weight="{weight}"' if weight else "") + (f' letter-spacing="{spacing}"' if spacing else "") \
+def text(x, y, s, size, fill, anchor="start", weight=None, spacing=None, opacity=None, cls="t", extra=""):
+    attrs = (f' font-weight="{weight}"' if weight else "") + (f' letter-spacing="{spacing}"' if spacing else "") \
         + (f' opacity="{opacity}"' if opacity is not None else "")
     return (f'<text x="{x}" y="{y}" class="{cls}" font-size="{size}" fill="{fill}" '
-            f'text-anchor="{anchor}"{extra}>{escape(s)}</text>')
+            f'text-anchor="{anchor}"{attrs}{extra}>{escape(s)}</text>')
 
 
-def space(w, h, rng, stars=120, radius=22):
-    """Deep background: base, two nebula washes, and a starfield."""
-    parts = [f'<rect width="{w}" height="{h}" rx="{radius}" fill="{BG}"/>',
-             f'<rect width="{w}" height="{h}" rx="{radius}" fill="url(#neb1)"/>',
-             f'<rect width="{w}" height="{h}" rx="{radius}" fill="url(#neb2)"/>']
-    for _ in range(stars):
-        x, y = rng.uniform(6, w - 6), rng.uniform(6, h - 6)
-        r = rng.choice([0.5, 0.7, 0.9, 1.2])
-        cls = ' class="tw"' if rng.random() < 0.22 else ""
-        parts.append(f'<circle{cls} cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{INK}" '
-                     f'opacity="{rng.uniform(.2, .75):.2f}" style="animation-delay:{rng.uniform(0, 6):.1f}s"/>')
-    return "".join(parts)
+def spans(x, y, parts, size, anchor="start", spacing=1.5):
+    """One line of text in several colours: parts is [(string, colour), ...]."""
+    inner = "".join(f'<tspan fill="{c}">{escape(s)}</tspan>' for s, c in parts)
+    return (f'<text x="{x}" y="{y}" class="t" font-size="{size}" text-anchor="{anchor}" '
+            f'letter-spacing="{spacing}">{inner}</text>')
 
 
-def frame(w, h, radius=22, accent=False):
-    stroke = ACCENT if accent else "#fff"
-    return (f'<rect x=".75" y=".75" width="{w - 1.5}" height="{h - 1.5}" rx="{radius}" fill="none" '
-            f'stroke="{stroke}" stroke-opacity="{.35 if accent else .12}" stroke-width="1.5"/>')
+def dots(points, r, color, opacity=None, extra=""):
+    """Many dots as one path: each is a zero-length segment drawn with a round cap."""
+    if not points:
+        return ""
+    d = "".join(f"M{x:.1f} {y:.1f}h0" for x, y in points)
+    op = f' opacity="{opacity:.2f}"' if opacity is not None else ""
+    return (f'<path d="{d}" fill="none" stroke="{color}" stroke-width="{2 * r:.2f}" '
+            f'stroke-linecap="round"{op}{extra}/>')
 
 
-def glass(x, y, w, h, r=20):
-    """A liquid-glass island like the site's: tinted body, bright top rim, specular glint."""
-    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="url(#glass)"/>'
-            f'<rect x="{x + .75}" y="{y + .75}" width="{w - 1.5}" height="{h - 1.5}" rx="{r}" fill="none" '
-            f'stroke="url(#rim)" stroke-width="1.5"/>'
-            f'<path d="M{x + r} {y + 1.6} H{x + w - r}" stroke="#fff" stroke-opacity=".5" stroke-width="1" '
-            f'stroke-linecap="round"/>')
-
-
-def dot_text(word, x, y, pitch, r):
-    out = []
-    for i, ch in enumerate(word):
-        for row, bits in enumerate(GLYPHS[ch]):
-            for col, bit in enumerate(bits):
-                if bit == "1":
-                    out.append(f'<circle class="d" cx="{x + (i * 6 + col) * pitch:.1f}" cy="{y + row * pitch:.1f}" '
-                               f'r="{r}" style="animation-delay:{(i * 6 + col) * .07:.2f}s"/>')
-    return f'<g filter="url(#bloom)">{"".join(out)}</g>'
-
-
-def chip(x, y, label, size=12, fill=ACCENT):
-    w = CHAR * size * len(label) + 20
-    return (f'<rect x="{x}" y="{y}" width="{w:.0f}" height="{size + 12}" rx="{(size + 12) / 2}" fill="{fill}" '
-            f'fill-opacity=".10" stroke="{fill}" stroke-opacity=".45"/>'
-            + text(f"{x + 10:.0f}", y + size + 3.5, label, size, fill)), w
-
-
-# --------------------------------------------------------------------------- dot-art pieces
-
-def black_hole(cx, cy, s, rng, tilt=-14, spin=True):
-    parts = [f'<circle cx="{cx}" cy="{cy}" r="{155 * s:.1f}" fill="url(#glow)"/>',
-             f'<g transform="translate({cx} {cy}) rotate({tilt}) scale(1 .3)">']
-    for ring, (radius, count, size, color, speed) in enumerate([
-            (92, 66, 2.6, ACCENT, 38), (114, 84, 2.1, VIOLET, 52), (137, 100, 1.7, ACCENT, 68),
-            (160, 116, 1.3, INK, 90)]):
-        dots = []
-        for k in range(count):
-            a = 2 * math.pi * k / count
-            o = .3 + .7 * (.5 + .5 * math.cos(a + .6)) * rng.uniform(.7, 1)
-            dots.append(f'<circle cx="{radius * s * math.cos(a):.1f}" cy="{radius * s * math.sin(a):.1f}" '
-                        f'r="{size * s:.2f}" fill="{color}" opacity="{o:.2f}"/>')
-        cls = ' class="spin"' if spin else ""
-        direction = "" if ring % 2 == 0 else "animation-direction:reverse;"
-        parts.append(f'<g{cls} style="transform-origin:0 0;{direction}animation-duration:{speed}s">{"".join(dots)}</g>')
-    parts.append("</g>")
-    # Gravitational lensing: the far side of the disk bent up over the shadow.
-    lens = []
-    for k in range(40):
-        a = math.pi + math.pi * k / 39
-        lens.append(f'<circle cx="{cx + 76 * s * math.cos(a):.1f}" cy="{cy + 64 * s * math.sin(a):.1f}" '
-                    f'r="{1.5 * s:.2f}" fill="{ACCENT}" opacity="{.25 + .45 * abs(math.sin(a)):.2f}"/>')
-    parts.append("".join(lens))
-    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{57 * s:.1f}" fill="none" stroke="{ACCENT}" '
-                 f'stroke-width="{2.4 * s:.2f}" class="pulse" filter="url(#bloom)"/>')
-    parts.append(f'<circle cx="{cx}" cy="{cy}" r="{51 * s:.1f}" fill="#050307"/>')
-    front = []
-    for k in range(52):
-        a = math.pi * k / 51
-        front.append(f'<circle cx="{126 * s * math.cos(a):.1f}" cy="{126 * s * math.sin(a):.1f}" '
-                     f'r="{2.1 * s:.2f}" fill="{ACCENT}" opacity="{.35 + .55 * math.sin(a):.2f}"/>')
-    parts.append(f'<g transform="translate({cx} {cy}) rotate({tilt}) scale(1 .3)">{"".join(front)}</g>')
-    return "".join(parts)
+def dotfield(points, r, color, levels=5):
+    """Dots with their own opacities, (x, y, o), grouped into a few paths by brightness."""
+    buckets = {}
+    for x, y, o in points:
+        buckets.setdefault(max(1, round(o * levels)), []).append((x, y))
+    return "".join(dots(pts, r, color, k / levels) for k, pts in sorted(buckets.items()))
 
 
 def dots_on(points, r, color=ACCENT, opacity=1.0):
-    return "".join(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{color}" opacity="{o * opacity:.2f}"/>'
-                   for x, y, o in points)
+    return dotfield([(x, y, o * opacity) for x, y, o in points], r, color)
 
 
 def line_pts(x1, y1, x2, y2, step, o=1.0):
     n = max(1, int(math.hypot(x2 - x1, y2 - y1) / step))
     return [(x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n, o) for i in range(n + 1)]
 
+
+def space(w, h, rng, stars=120, radius=RADIUS):
+    """Deep background: base, two nebula washes, three depths of stars and a few flares."""
+    parts = [f'<rect width="{w}" height="{h}" rx="{radius}" fill="{BG}"/>',
+             f'<rect width="{w}" height="{h}" rx="{radius}" fill="url(#neb1)"/>',
+             f'<rect width="{w}" height="{h}" rx="{radius}" fill="url(#neb2)"/>']
+    far = [(rng.uniform(8, w - 8), rng.uniform(8, h - 8), rng.uniform(.15, .5)) for _ in range(stars)]
+    near = [(rng.uniform(8, w - 8), rng.uniform(8, h - 8), rng.uniform(.4, .85)) for _ in range(stars // 4)]
+    parts += [dotfield(far, .6, INK, 3), dotfield(near, 1.0, INK, 3)]
+    for _ in range(max(1, stars // 12)):
+        x, y = rng.uniform(10, w - 10), rng.uniform(10, h - 10)
+        parts.append(f'<circle class="tw" cx="{x:.1f}" cy="{y:.1f}" r="1.2" fill="{PALE}" '
+                     f'style="animation-delay:{rng.uniform(0, 6):.1f}s"/>')
+    for _ in range(stars // 110):
+        x, y, s = rng.uniform(40, w - 40), rng.uniform(20, h - 20), rng.uniform(3.5, 6)
+        parts.append(f'<g class="tw" style="animation-delay:{rng.uniform(0, 4):.1f}s" stroke="{PALE}" '
+                     f'stroke-linecap="round"><path d="M{x - s:.1f} {y:.1f}H{x + s:.1f}M{x:.1f} {y - s:.1f}V{y + s:.1f}" '
+                     f'stroke-width=".9"/><circle cx="{x:.1f}" cy="{y:.1f}" r="1.4" fill="{PALE}" stroke="none"/></g>')
+    return "".join(parts)
+
+
+def frame(w, h, radius=RADIUS):
+    return (f'<rect x=".75" y=".75" width="{w - 1.5}" height="{h - 1.5}" rx="{radius}" fill="none" '
+            f'stroke="#fff" stroke-opacity=".10" stroke-width="1.5"/>')
+
+
+def glass(x, y, w, h, r=14):
+    """A liquid-glass island like the site's: tinted body, bright top rim, specular glint."""
+    return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{BG2}" fill-opacity=".55"/>'
+            f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="url(#glass)"/>'
+            f'<rect x="{x + .75}" y="{y + .75}" width="{w - 1.5}" height="{h - 1.5}" rx="{r}" fill="none" '
+            f'stroke="url(#rim)" stroke-width="1.5"/>'
+            f'<path d="M{x + r} {y + 1.6} H{x + w - r}" stroke="#fff" stroke-opacity=".5" stroke-width="1" '
+            f'stroke-linecap="round"/>')
+
+
+# --------------------------------------------------------------------------- the site's HUD
+
+def corners(w, h, inset=12, size=20, x0=0, y0=0):
+    """The four corner brackets that frame the site's camera view."""
+    a, b, c, d = x0 + inset, y0 + inset, x0 + w - inset, y0 + h - inset
+    s = size
+    return (f'<path d="M{a} {b + s}V{b}H{a + s}M{c - s} {b}H{c}V{b + s}M{c} {d - s}V{d}H{c - s}M{a + s} {d}H{a}V{d - s}" '
+            f'fill="none" stroke="{ACCENT}" stroke-opacity=".6" stroke-width="2"/>')
+
+
+def tag(x, y, label, name=None, center=False):
+    """A solid accent tag with dark lettering, optionally followed by a name in grey."""
+    tw = len(label) * (LABEL * CHAR + 2) + 16
+    nw = len(name) * (LABEL * CHAR + 3) + 12 if name else 0
+    if center:
+        x -= (tw + nw) / 2
+    out = (f'<rect x="{x:.1f}" y="{y}" width="{tw:.1f}" height="22" fill="{ACCENT}"/>'
+           + text(f"{x + 8:.1f}", y + 16, label, LABEL, BG, weight=600, spacing=2))
+    if name:
+        out += text(f"{x + tw + 12:.1f}", y + 16, name, LABEL, MID, spacing=3)
+    return out, tw + nw
+
+
+def pips(x, y, n=3, on=0):
+    out = []
+    for i in range(n):
+        px = x + i * 15
+        if i == on:
+            out.append(f'<rect x="{px}" y="{y}" width="9" height="9" fill="{ACCENT}" filter="url(#bloom)"/>')
+        else:
+            out.append(f'<rect x="{px + .5}" y="{y + .5}" width="8" height="8" fill="none" stroke="{ACCENT}" '
+                       f'stroke-opacity=".6"/>')
+    return "".join(out)
+
+
+def barcode(x, y, w=64, h=12):
+    bars = [(0, 2), (4, 1), (9, 3)]
+    out = []
+    for p in range(0, int(w), 14):
+        out += [f'<rect x="{x + p + a}" y="{y}" width="{min(b, w - p - a)}" height="{h}"/>' for a, b in bars if p + a < w]
+    return f'<g fill="#fff" opacity=".45">{"".join(out)}</g>'
+
+
+def chip(x, y, label, size=SMALL, fill=ACCENT):
+    """A square-cornered tag, like the HUD pips."""
+    w = CHAR * size * len(label) + 22
+    return (f'<rect x="{x}" y="{y}" width="{w:.0f}" height="{size + 14}" rx="4" fill="{fill}" '
+            f'fill-opacity=".08" stroke="{fill}" stroke-opacity=".45"/>'
+            + text(f"{x + 11:.0f}", y + size + 4.5, label, size, fill)), w
+
+
+def readout(x, y, pairs, anchor="start"):
+    """HUD readout: grey labels, bright values."""
+    parts = []
+    for i, (k, v) in enumerate(pairs):
+        parts += [((" · " if i else "") + k + " ", LO), (v, INK)]
+    return spans(x, y, parts, LABEL, anchor)
+
+
+# --------------------------------------------------------------------------- dot lettering
+
+def dot_word(word, x, y, pitch, uid, shine=True):
+    """A word in the site's Exypnos dot font with its vertical gradient. Returns (svg, width)."""
+    pts, cx = [], x
+    for ch in word:
+        if ch == " ":
+            cx += DOT_SPACE * pitch
+            continue
+        rows = DOT[ch]
+        pts += [(cx + col * pitch, y + row * pitch)
+                for row, bits in enumerate(rows) for col, bit in enumerate(bits) if bit == "1"]
+        cx += len(rows[0]) * pitch
+    width = cx - x - 4 * pitch
+    r = DOT_R * pitch
+    out = (f'<linearGradient id="wg{uid}" gradientUnits="userSpaceOnUse" x1="0" y1="{y}" x2="0" y2="{y + 10 * pitch}">'
+           f'<stop offset="0" stop-color="{PALE}"/><stop offset=".5" stop-color="{ACCENT}"/>'
+           f'<stop offset="1" stop-color="{VIOLET}"/></linearGradient>'
+           f'<g filter="url(#bloom)">{dots(pts, r, f"url(#wg{uid})")}</g>')
+    if shine:
+        band = 26 * pitch
+        out += (f'<mask id="wm{uid}" maskUnits="userSpaceOnUse" x="{x - 2 * pitch}" y="{y - 2 * pitch}" '
+                f'width="{width + 4 * pitch}" height="{14 * pitch}">'
+                f'<rect class="shine" style="--sw:{width + 2 * band:.0f}px" x="{x - band:.0f}" y="{y - 2 * pitch}" '
+                f'width="{band:.0f}" height="{14 * pitch}" fill="url(#band)"/></mask>'
+                + dots(pts, r, "#fff", .8, f' mask="url(#wm{uid})"'))
+    return out, width
+
+
+# --------------------------------------------------------------------------- scenes
+
+def ring(rx, ry, n, r, color, opacity, dur, reverse=False, d=None):
+    """A ring of n dots that orbit: a dashed ellipse whose dash offset runs."""
+    shape = f'<path d="{d}"' if d else f'<ellipse rx="{rx:.1f}" ry="{ry:.1f}"'
+    direction = "animation-direction:reverse;" if reverse else ""
+    return (f'{shape} pathLength="360" fill="none" stroke="{color}" stroke-width="{2 * r:.2f}" stroke-linecap="round" '
+            f'stroke-dasharray="0 {360 / n:.4f}" opacity="{opacity:.2f}" class="orbit" '
+            f'style="{direction}animation-duration:{dur:.0f}s"/>')
+
+
+def black_hole(cx, cy, R, uid, tilt=-11):
+    """The site's EVENT HORIZON: an accretion disk of orbiting dots, lensed over the shadow.
+
+    The disk is split along its long axis; the far half is drawn before the shadow and the near
+    half after it. A static mask brightens the side that turns toward us (Doppler beaming).
+    """
+    disk = []
+    for k in range(13):
+        t = k / 12
+        rr = R * (1.3 + 2.1 * t)
+        color = PALE if t < .2 else ACCENT if t < .65 else VIOLET
+        disk.append(ring(rr, rr * .19, int(2 * math.pi * rr / (6 + 6 * t)), 2.3 - 1.1 * t, color,
+                         1 - .62 * t, 22 * (1.3 + 2.1 * t) ** 1.5 / 1.5, reverse=True))
+    disk = "".join(disk)
+    ext = R * 3.6
+    lens = []
+    for k in range(8):
+        a = R * (1.1 + .12 * k)
+        b = a * (1.0 - .05 * k)
+        lens.append(ring(0, 0, int(math.pi * a / 5.5), 2.1 - .17 * k, PALE if k < 3 else ACCENT, 1 - .1 * k,
+                         16 + 5 * k, reverse=True, d=f"M{-a:.1f} 0A{a:.1f} {b:.1f} 0 0 1 {a:.1f} 0"))
+    under = ring(0, 0, 40, 1.3, ACCENT, .55, 20, d=f"M{-R * 1.08:.1f} 0A{R * 1.08:.1f} {R * .62:.1f} 0 0 0 {R * 1.08:.1f} 0")
+    defs = (f'<linearGradient id="dop{uid}" x1="0" x2="1"><stop offset="0" stop-color="#fff"/>'
+            f'<stop offset="1" stop-color="#fff" stop-opacity=".3"/></linearGradient>'
+            f'<mask id="dm{uid}" maskUnits="userSpaceOnUse" x="{-ext:.0f}" y="{-ext:.0f}" width="{2 * ext:.0f}" '
+            f'height="{2 * ext:.0f}"><rect x="{-ext:.0f}" y="{-ext:.0f}" width="{2 * ext:.0f}" height="{2 * ext:.0f}" '
+            f'fill="url(#dop{uid})"/></mask>'
+            f'<clipPath id="back{uid}"><rect x="{-ext:.0f}" y="{-ext:.0f}" width="{2 * ext:.0f}" height="{ext:.0f}"/></clipPath>'
+            f'<clipPath id="front{uid}"><rect x="{-ext:.0f}" y="0" width="{2 * ext:.0f}" height="{ext:.0f}"/></clipPath>')
+    return (f'<circle cx="{cx}" cy="{cy}" r="{R * 3.6:.1f}" fill="url(#glow)"/>'
+            f'<g transform="translate({cx} {cy})">{defs}'
+            f'<g transform="rotate({tilt})"><g clip-path="url(#back{uid})" mask="url(#dm{uid})">{disk}</g></g>'
+            f'<g transform="rotate({tilt / 2})" mask="url(#dm{uid})">{"".join(lens)}{under}</g>'
+            f'<circle r="{R * 1.05:.1f}" fill="none" stroke="{PALE}" stroke-width="2.2" class="pulse" filter="url(#bloom)"/>'
+            f'<circle r="{R:.1f}" fill="#050307"/>'
+            f'<g transform="rotate({tilt})"><g clip-path="url(#front{uid})" mask="url(#dm{uid})">{disk}</g></g>'
+            '</g>')
+
+
+def galaxy(cx, cy, size, rng, opacity=1.0, dur=140):
+    """The site's SPIRAL ARMS: a two-armed log spiral of dots around a bright bulge, tilted toward us."""
+    pts = []
+    for arm in range(2):
+        for k in range(260):
+            t = k / 259
+            a = arm * math.pi + t * 4.4 + rng.gauss(0, .12)
+            r = size * (.08 + .92 * t) + rng.gauss(0, size * .03)
+            pts.append((cx + r * math.cos(a), cy + .5 * r * math.sin(a), (1 - .75 * t) * opacity))
+    dust = [(cx + rng.gauss(0, size * .45), cy + rng.gauss(0, size * .2), .3 * opacity) for _ in range(160)]
+    return (f'<circle cx="{cx}" cy="{cy}" r="{size * .9:.0f}" fill="url(#glow)" opacity="{opacity:.2f}"/>'
+            f'<g class="spin" style="transform-origin:{cx}px {cy}px;animation-duration:{dur}s">'
+            + dotfield(pts, 1.5, ACCENT) + dotfield(dust, 1, INK) + '</g>'
+            + f'<ellipse cx="{cx}" cy="{cy}" rx="{size * .13:.0f}" ry="{size * .08:.0f}" fill="{PALE}" '
+              f'opacity="{.8 * opacity:.2f}" filter="url(#soft)"/>')
+
+
+def scope(cx, cy, r):
+    """A HUD reticle: glass disc, a turning ring of dots, and tick marks every 30 degrees."""
+    ticks = []
+    for k in range(12):
+        a = math.pi * k / 6
+        major = k % 3 == 0
+        r1, r2 = r + 14, r + (24 if major else 19)
+        ticks.append(f'M{cx + r1 * math.cos(a):.1f} {cy + r1 * math.sin(a):.1f}L{cx + r2 * math.cos(a):.1f} '
+                     f'{cy + r2 * math.sin(a):.1f}')
+    return (f'<circle cx="{cx}" cy="{cy}" r="{r * 1.9:.0f}" fill="url(#glow)" opacity=".8"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="{BG2}" fill-opacity=".8"/>'
+            f'<circle cx="{cx}" cy="{cy}" r="{r}" fill="url(#glass)" stroke="url(#rim)" stroke-width="1.5"/>'
+            f'<g transform="translate({cx} {cy})">{ring(r + 7, r + 7, int(2 * math.pi * (r + 7) / 9), 1.3, ACCENT, .7, 60)}</g>'
+            f'<path d="{"".join(ticks)}" stroke="{ACCENT}" stroke-opacity=".55" stroke-width="1.5"/>')
+
+
+# --------------------------------------------------------------------------- icons
 
 def icon_radar(cx, cy, s=1.0):
     """portscan: concentric rings, a rotating sweep, and blips on open ports."""
@@ -202,10 +366,8 @@ def icon_radar(cx, cy, s=1.0):
         pts += [(cx + radius * s * math.cos(2 * math.pi * k / n), cy + radius * s * math.sin(2 * math.pi * k / n), .35)
                 for k in range(n)]
     pts += line_pts(cx - 52 * s, cy, cx + 52 * s, cy, 7 * s, .2) + line_pts(cx, cy - 52 * s, cx, cy + 52 * s, 7 * s, .2)
-    sweep = "".join(f'<circle cx="{cx + r * s * math.cos(a):.1f}" cy="{cy + r * s * math.sin(a):.1f}" r="{1.9 * s:.2f}" '
-                    f'fill="{ACCENT}" opacity="{.9 - .25 * j:.2f}"/>'
-                    for j, a in enumerate([0, -.18, -.36])
-                    for r in range(6, 50, 6))
+    sweep = "".join(dots([(cx + r * s * math.cos(a), cy + r * s * math.sin(a)) for r in range(6, 50, 6)],
+                         1.9 * s, ACCENT, .9 - .25 * j) for j, a in enumerate([0, -.18, -.36]))
     blips = "".join(f'<circle cx="{cx + bx * s}" cy="{cy + by * s}" r="{3.4 * s:.1f}" fill="{VIOLET}" class="pulse" '
                     f'style="animation-delay:{d}s" filter="url(#bloom)"/>'
                     for bx, by, d in [(22, -28, 0), (-36, 14, 1.3), (30, 26, 2.6)])
@@ -251,40 +413,27 @@ def icon_log(cx, cy, s=1.0):
         y = cy - 39 * s + i * 13 * s
         hit = i == 4
         color, o, r = (VIOLET, 1, 2.2) if hit else (LO, .8, 1.5)
-        pts = line_pts(cx - 46 * s, y, cx - 46 * s + w * s, y, 6 * s)
-        g = dots_on(pts, r * s, color, o)
+        g = dots_on(line_pts(cx - 46 * s, y, cx - 46 * s + w * s, y, 6 * s), r * s, color, o)
         out.append(f'<g class="pulse" filter="url(#bloom)">{g}</g>' if hit else g)
         if hit:
             out.append(f'<path d="M{cx - 58 * s} {y} l6 -5 v10 z" fill="{ACCENT}"/>')
     return "".join(out)
 
 
-def icon_galaxy(cx, cy, s=1.0, rng=None):
-    rng = rng or random.Random(5)
-    pts = []
-    for arm in range(2):
-        for k in range(70):
-            t = k / 69
-            a = arm * math.pi + t * 3.6
-            r = 6 + t * 52
-            pts.append((cx + r * s * math.cos(a) + rng.uniform(-2, 2), cy + .55 * r * s * math.sin(a) + rng.uniform(-2, 2),
-                        1 - .7 * t))
-    core = f'<circle cx="{cx}" cy="{cy}" r="{9 * s}" fill="{INK}" opacity=".9" filter="url(#soft)"/>'
-    return f'<g class="spin" style="transform-origin:{cx}px {cy}px;animation-duration:80s">{dots_on(pts, 1.6 * s)}</g>' + core
+def icon_galaxy(cx, cy, s=1.0):
+    return galaxy(cx, cy, 58 * s, random.Random(5), dur=80)
 
 
 def icon_sword(cx, cy, s=1.0):
-    """Shadow Slave: a dot-art blade."""
+    """Dreamfall: a dot-art blade."""
     bitmap = ["00000000011", "00000000111", "00000001110", "00000011100", "00000111000", "00001110000",
               "10011100000", "01111000000", "00110000000", "01011000000", "10000100000"]
-    out = []
+    blade, hilt = [], []
     for row, bits in enumerate(bitmap):
         for col, b in enumerate(bits):
             if b == "1":
-                color = VIOLET if row >= 6 else ACCENT
-                out.append(f'<circle cx="{cx + (col - 5) * 8 * s:.1f}" cy="{cy + (row - 5) * 8 * s:.1f}" '
-                           f'r="{2.6 * s:.1f}" fill="{color}"/>')
-    return f'<g filter="url(#bloom)">{"".join(out)}</g>'
+                (hilt if row >= 6 else blade).append((cx + (col - 5) * 8 * s, cy + (row - 5) * 8 * s))
+    return f'<g filter="url(#bloom)">{dots(blade, 2.6 * s, ACCENT)}{dots(hilt, 2.6 * s, VIOLET)}</g>'
 
 
 ICONS = {"radar": icon_radar, "mail": icon_mail, "key": icon_key, "log": icon_log,
@@ -293,186 +442,229 @@ ICONS = {"radar": icon_radar, "mail": icon_mail, "key": icon_key, "log": icon_lo
 
 # --------------------------------------------------------------------------- panels
 
+CARD_W = (W - GAP) / 2
+LINK_W = (W - 2 * GAP) / 3
+
+
+def in_row(inner_w, h, slot, n, body, title):
+    """One of n images that share a README row with no space between them.
+
+    Each file is W / n wide and holds a panel inner_w wide, shifted so the outer panels
+    line up with the full-width ones and every gutter in the row comes out equal.
+    """
+    cell = W / n
+    x = slot * (cell - inner_w) / (n - 1)
+    return svg(f"{cell:g}", h, f'<g transform="translate({x:g} 0)">{body}</g>', title)
+
+
 def banner():
-    w, h = 1200, 360
+    w, h = W, 420
     rng = random.Random(7)
-    hx, hy = 915, 175
-    body = [space(w, h, rng, 300),
-            f'<rect class="scan" x="0" y="0" width="{w}" height="80" fill="url(#scanline)"/>',
-            black_hole(hx, hy, 1.25, rng),
-            dot_text("BLAZE", 80, 70, 15, 5),
-            text(80, 226, "QA · bug hunting · security tooling", 27, ACCENT),
-            text(80, 262, "I test things until they break, then help fix them.", 19, MID),
-            f'<circle cx="88" cy="304" r="5" fill="#3ddc84" class="pulse"/>',
-            text(102, 309, "building authtrail · blazexyz.com · America/Chicago", 15, LO),
-            frame(w, h)]
-    return svg(w, h, "".join(body), "BLAZE: QA, bug hunting and security tooling. "
+    word, _ = dot_word("BLAZEXYZ", 72, 92, 5.6, "hero")
+    t, _ = tag(72, 40, "BIO", "EVENT HORIZON")
+    body = [space(w, h, rng, 320),
+            f'<rect class="scan" style="--sh:{h + 80}px" x="0" y="0" width="{w}" height="80" fill="url(#scanline)"/>',
+            black_hole(944, 206, 66, "hero"),
+            t, word,
+            text(72, 222, "QA · bug hunting · security tooling", 28, ACCENT),
+            text(72, 260, "I test things until they break, then help fix them.", LEAD, MID),
+            f'<circle cx="79" cy="306" r="5" fill="#3ddc84" class="pulse"/>',
+            spans(94, 311, [("NOW ", LO), ("building authtrail", INK)], SMALL),
+            pips(72, 368), text(124, 377, "SIGNAL", LABEL, LO, spacing=3),
+            readout(1048, 377, [("TZ", "America/Chicago"), ("PRONOUNS", "she/her")], "end"),
+            barcode(1064, 366),
+            text(0, 0, "BLAZEXYZ // PROFILE // SIGNAL", 11, LO, "middle", spacing=5,
+                 extra=f' transform="translate(34 {h / 2}) rotate(-90)"'),
+            corners(w, h), frame(w, h)]
+    return svg(w, h, "".join(body), "BLAZEXYZ: QA, bug hunting and security tooling. "
                                     "I test things until they break, then help fix them.")
 
 
-def link_button(label, sub, glyph):
-    w, h = 300, 64
+def link_button(slot, label, sub, glyph):
+    w, h = LINK_W, 80
     rng = random.Random(label)
-    body = [space(w, h, rng, 18, 32), glass(4, 4, w - 8, h - 8, 28),
-            f'<circle cx="38" cy="32" r="15" fill="{ACCENT}" fill-opacity=".14" stroke="{ACCENT}" stroke-opacity=".6"/>',
-            text(38, 37, glyph, 15, ACCENT, "middle"),
-            text(66, 30, label, 16, INK), text(66, 48, sub, 11, LO)]
-    return svg(w, h, "".join(body), f"{label}: {sub}")
+    body = [space(w, h, rng, 30),
+            f'<rect x="24" y="22" width="36" height="36" fill="{ACCENT}" fill-opacity=".12" stroke="{ACCENT}" '
+            f'stroke-opacity=".6"/>',
+            text(42, 46, glyph, 18, ACCENT, "middle"),
+            text(76, 37, label, 19, INK), text(76, 59, sub, SMALL, LO),
+            text(w - 30, 48, "↗", 22, ACCENT, "end"),
+            corners(w, h, 8, 12), frame(w, h)]
+    return in_row(w, h, slot, 3, "".join(body), f"{label}: {sub}")
 
 
-def about(rows):
-    w, h = 1200, 300
+def about(rows, numbers):
+    w, h = W, 330
     rng = random.Random(11)
-    body = [space(w, h, rng, 120), glass(24, 24, w - 48, h - 48, 26),
-            black_hole(165, 150, .62, rng, spin=True),
-            text(165, 252, "BLAZE", 13, LO, "middle", spacing=4)]
-    y = 66
-    for label, value in rows:
-        body.append(text(320, y, label.upper(), 12, ACCENT, spacing=3))
-        body.append(text(460, y, value, 18, INK))
-        y += 42
-    body.append(f'<path d="M300 50 V250" stroke="#fff" stroke-opacity=".10"/>')
-    body.append(frame(w, h))
-    return svg(w, h, "".join(body), "About: " + "; ".join(f"{k}: {v}" for k, v in rows))
+    t, _ = tag(48, 34, "BIO", "ABOUT")
+    body = [space(w, h, rng, 110), galaxy(668, 190, 96, rng, .8), t]
+    for i, (label, value) in enumerate(rows):
+        y = 112 + i * 42
+        body += [text(48, y, label.upper(), LABEL, ACCENT, spacing=3), text(190, y, value, 19, INK)]
+    tw, th = 188, 104
+    for i, (value, label) in enumerate(numbers):
+        x, y = 776 + (i % 2) * (tw + GAP), 74 + (i // 2) * (th + GAP)
+        body += [glass(x, y, tw, th, 4), corners(tw, th, 6, 10, x, y),
+                 f'<g filter="url(#bloom)">{text(x + tw / 2, y + 58, value, 40, ACCENT, "middle")}</g>',
+                 text(x + tw / 2, y + 85, label, SMALL, MID, "middle")]
+    body += [corners(w, h), frame(w, h)]
+    return svg(w, h, "".join(body), "About: " + "; ".join(f"{k}: {v}" for k, v in rows)
+               + ". " + ", ".join(f"{v} {l}" for v, l in numbers))
 
 
-def stats(items):
-    w, h = 1200, 150
-    rng = random.Random(13)
-    body = [space(w, h, rng, 60)]
-    tw = (w - 48 - 3 * 16) / 4
-    for i, (value, label) in enumerate(items):
-        x = 24 + i * (tw + 16)
-        body += [glass(x, 22, tw, h - 44, 20),
-                 f'<g filter="url(#bloom)">{text(x + tw / 2, 82, value, 44, ACCENT, "middle")}</g>',
-                 text(x + tw / 2, 108, label, 14, MID, "middle")]
-    return svg(w, h, "".join(body), ", ".join(f"{v} {l}" for v, l in items))
-
-
-def header(title, sub):
-    w, h = 1200, 92
+def header(num, title, sub):
+    """A section divider: number tag, the title in dot lettering, and a subtitle."""
+    w, h = W, 96
     rng = random.Random(title)
-    tx = 52
-    width = CHAR * 22 * len(title) + 4 * len(title)
-    body = [f'<circle cx="30" cy="40" r="6" fill="{ACCENT}" class="pulse" filter="url(#bloom)"/>',
-            text(tx, 48, title, 22, INK, spacing=4),
-            text(tx, 76, sub, 14, LO),
-            f'<rect x="{tx + width + 24:.0f}" y="39" width="{w - tx - width - 50:.0f}" height="2" fill="url(#fade)" '
-            f'opacity=".6"/>']
-    dots = dots_on([(tx + width + 24 + k * 14, 40, .2 + .6 * rng.random()) for k in range(int((w - tx - width - 60) / 14))],
-                   1.6)
-    body.insert(3, dots)
-    return svg(w, h, "".join(body), f"{title}: {sub}")
+    t, tw = tag(40, 37, num)
+    word, ww = dot_word(title, 40 + tw + 22, 31, 3.4, title.replace(" ", "").lower())
+    start = 40 + tw + 22 + ww + 30
+    end = w - 44 - len(sub) * SMALL * CHAR - 26
+    n = max(0, int((end - start) / 12))
+    line = [(start + k * 12, 48.5, .15 + .6 * math.sin(math.pi * k / max(n - 1, 1))) for k in range(n)]
+    body = [space(w, h, rng, 50), t, word, dotfield(line, 1.6, ACCENT),
+            text(w - 44, 54, sub, SMALL, MID, "end"), corners(w, h, 10, 14), frame(w, h)]
+    return svg(w, h, "".join(body), f"{num}. {title.title()}: {sub}")
 
 
-def project_card(p):
-    w, h = 590, 320
-    rng = random.Random(p["name"])
-    body = [space(w, h, rng, 50, 20),
-            f'<circle cx="490" cy="112" r="88" fill="url(#glow)"/>',
-            ICONS[p["icon"]](490, 112, 1.0),
-            text(30, 44, p["layer"], 12, ACCENT, spacing=3),
-            text(30, 90, p["name"], 30, INK)]
-    for i, line in enumerate(p["lines"]):
-        body.append(text(30, 128 + i * 23, line, 15, MID))
-    hy = 128 + len(p["lines"]) * 23 + 4
-    hw = CHAR * 13 * len(p["highlight"]) + 40
-    body += [f'<rect x="30" y="{hy}" width="{hw:.0f}" height="30" rx="8" fill="{VIOLET}" fill-opacity=".10" '
+def card_head(c, w, rng):
+    """Shared top of every card: tag, name, description, and the icon in a HUD reticle."""
+    kind, sep, area = c["layer"].partition(" · ")
+    t, _ = tag(32, 30, kind, area or None)
+    out = [space(w, c["h"], rng, 60), scope(w - 98, 96, 46), ICONS[c["icon"]](w - 98, 96, .68),
+           t, text(32, 100, c["name"], 30, INK)]
+    out += [text(32, 146 + i * 25, line, BODY, MID) for i, line in enumerate(c["lines"])]
+    return out
+
+
+def card_foot(c, w):
+    h = c["h"]
+    cta = c.get("cta", "")
+    return [f'<path d="M32 {h - 50} H{w - 32}" stroke="#fff" stroke-opacity=".08"/>',
+            readout(32, h - 23, c["footer"]),
+            text(w - 32, h - 23, cta, LABEL, ACCENT, "end", spacing=2),
+            corners(w, h, 8, 12), frame(w, h)]
+
+
+def project_card(slot, p):
+    w = CARD_W
+    p = dict(p, h=356, cta="VIEW REPO ↗")
+    body = card_head(p, w, random.Random(p["name"]))
+    hy = 218
+    hw = CHAR * SMALL * len(p["highlight"]) + 46
+    body += [f'<rect x="32" y="{hy}" width="{hw:.0f}" height="34" rx="4" fill="{VIOLET}" fill-opacity=".10" '
              f'stroke="{VIOLET}" stroke-opacity=".5"/>',
-             f'<circle cx="46" cy="{hy + 15}" r="4" fill="{VIOLET}" class="pulse"/>',
-             text(58, hy + 20, p["highlight"], 13, INK)]
-    x = 30
-    for tag in p["tags"]:
-        c, cw = chip(x, h - 74, tag)
+             f'<rect x="45" y="{hy + 13}" width="8" height="8" fill="{VIOLET}" class="pulse"/>',
+             text(62, hy + 22, p["highlight"], SMALL, INK)]
+    x = 32
+    for label in p["tags"]:
+        c, cw = chip(x, 266, label)
         body.append(c)
         x += cw + 8
-    body += [f'<path d="M30 {h - 32} H{w - 30}" stroke="#fff" stroke-opacity=".08"/>',
-             text(30, h - 13, p["footer"], 12, LO),
-             text(w - 30, h - 13, "view repo →", 12, ACCENT, "end"),
-             frame(w, h, 20, accent=True)]
-    return svg(w, h, "".join(body), f"{p['name']}: {' '.join(p['lines'])}")
+    body += card_foot(p, w)
+    return in_row(w, p["h"], slot, 2, "".join(body), f"{p['name']}: {' '.join(p['lines'])}")
+
+
+def small_card(slot, c):
+    w = CARD_W
+    c = dict(c, h=276)
+    body = card_head(c, w, random.Random(c["name"])) + card_foot(c, w)
+    return in_row(w, c["h"], slot, 2, "".join(body), f"{c['name']}: {' '.join(c['lines'])}")
 
 
 def chain(steps):
-    w, h = 1200, 330
+    w, h = W, 330
     rng = random.Random(17)
     xs = [150 + i * 300 for i in range(len(steps))]
-    cy = 128
+    cy = 150
     body = [space(w, h, rng, 120)]
-    body.append(dots_on(line_pts(xs[0] + 70, cy, xs[-1] - 70, cy, 10, .45), 1.8))
+    body.append(dots_on(line_pts(xs[0] + 92, cy, xs[-1] - 92, cy, 10, .45), 1.8))
     for i in range(len(steps) - 1):
         ax = (xs[i] + xs[i + 1]) / 2
         body.append(f'<path d="M{ax - 7} {cy - 8} l12 8 l-12 8" fill="none" stroke="{ACCENT}" stroke-width="2.4" '
                     f'stroke-linecap="round" stroke-linejoin="round"/>')
-    dx = xs[-1] - xs[0] - 140
-    body.append(f'<g class="travel" style="--dx:{dx}px"><circle cx="{xs[0] + 70}" cy="{cy}" r="7" fill="{VIOLET}" '
-                f'filter="url(#bloom)"/><circle cx="{xs[0] + 70}" cy="{cy}" r="16" fill="{VIOLET}" opacity=".25" '
+    dx = xs[-1] - xs[0] - 184
+    body.append(f'<g class="travel" style="--dx:{dx}px"><circle cx="{xs[0] + 92}" cy="{cy}" r="7" fill="{VIOLET}" '
+                f'filter="url(#bloom)"/><circle cx="{xs[0] + 92}" cy="{cy}" r="16" fill="{VIOLET}" opacity=".25" '
                 f'filter="url(#soft)"/></g>')
     for x, (num, stage, icon, name, question) in zip(xs, steps):
-        body += [text(x, 34, f"{num} · {stage}", 12, ACCENT, "middle", spacing=3),
-                 f'<circle cx="{x}" cy="{cy}" r="68" fill="{BG2}"/>',
-                 f'<circle cx="{x}" cy="{cy}" r="68" fill="url(#glass)" stroke="url(#rim)" stroke-width="1.5"/>',
-                 ICONS[icon](x, cy, .9),
-                 text(x, 238, name, 19, INK, "middle"),
-                 text(x, 266, question, 14, MID, "middle")]
-    body.append(text(w / 2, 312, "one intrusion, start to finish: the email, the password, the open port, the login",
-                     13, LO, "middle"))
-    body.append(frame(w, h))
+        t, _ = tag(x, 30, f"{num} {stage}", center=True)
+        body += [t, scope(x, cy, 62), ICONS[icon](x, cy, .85),
+                 text(x, 268, name, 21, INK, "middle"),
+                 text(x, 296, question, BODY, MID, "middle")]
+    body += [corners(w, h), frame(w, h)]
     return svg(w, h, "".join(body), "Attack chain: " + "; then ".join(f"{s[3]} asks {s[4]}" for s in steps))
 
 
-def small_card(c):
-    w, h = 590, 230
-    rng = random.Random(c["name"])
-    body = [space(w, h, rng, 60, 20), f'<circle cx="490" cy="105" r="80" fill="url(#glow)"/>',
-            ICONS[c["icon"]](490, 105, .9),
-            text(30, 44, c["layer"], 12, ACCENT, spacing=3), text(30, 86, c["name"], 28, INK)]
-    for i, line in enumerate(c["lines"]):
-        body.append(text(30, 120 + i * 22, line, 15, MID))
-    x = 30
-    for tag in c["tags"]:
-        cc, cw = chip(x, h - 48, tag)
-        body.append(cc)
-        x += cw + 8
-    body.append(frame(w, h, 20, accent=True))
-    return svg(w, h, "".join(body), f"{c['name']}: {' '.join(c['lines'])}")
-
-
 def stack(groups):
-    w = 1200
+    w = W
     rng = random.Random(19)
     rows = []
-    y = 34
+    y = 38
     for label, items in groups:
-        rows.append(text(36, y + 17, label.upper(), 12, LO, spacing=3))
-        x = 230
+        rows.append(text(48, y + 20, label.upper(), LABEL, LO, spacing=3))
+        x = 260
         for item in items:
-            c, cw = chip(x, y, item, 14, ACCENT)
+            c, cw = chip(x, y, item, 16)
             rows.append(c)
             x += cw + 10
-        y += 46
-    h = y + 10
-    return svg(w, h, space(w, h, rng, 70) + "".join(rows) + frame(w, h),
+        y += 50
+    h = y - 50 + 30 + 38
+    return svg(w, h, space(w, h, rng, 70) + "".join(rows) + corners(w, h) + frame(w, h),
                "Tools: " + "; ".join(f"{label}: {', '.join(items)}" for label, items in groups))
 
 
 def footer():
-    w, h = 1200, 170
+    """The site's NIGHT HIGHWAY: a striped sun behind dotted mountains over a rolling grid."""
+    w, h = W, 300
     rng = random.Random(23)
-    body = [space(w, h, rng, 90)]
-    # A planet's horizon in dots, lit from the top.
-    for ring in range(9):
-        r = 900 + ring * 14
-        for k in range(150):
-            a = math.pi * 1.5 + (k - 75) / 75 * .62
-            x, y = 600 + r * math.cos(a), 1040 + r * math.sin(a)
-            if 0 < x < w and 0 < y < h:
-                o = (1 - ring / 9) * (1 - abs(k - 75) / 80)
-                body.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="1.5" fill="{ACCENT}" opacity="{o:.2f}"/>')
-    body += [text(600, 70, "thanks for stopping by", 22, INK, "middle", spacing=2),
-             text(600, 100, "blazexyz.com", 15, ACCENT, "middle"),
-             frame(w, h)]
-    return svg(w, h, "".join(body), "Thanks for stopping by. blazexyz.com")
+    hz = 214                                    # horizon
+    word, ww = dot_word("THANKS FOR STOPPING BY", 0, 40, 2.4, "thanks")
+    sun_r, sun_y = 64, hz - 26
+    r = RADIUS
+    ground = f"M0 {hz}H{w}V{h - r}a{r} {r} 0 0 1 -{r} {r}H{r}a{r} {r} 0 0 1 -{r} -{r}Z"
+    stripes = "".join(f'<rect x="{600 - sun_r}" y="{sun_y + k:.0f}" width="{2 * sun_r}" height="{1.5 + i * .8:.1f}" '
+                      f'fill="#000"/>' for i, k in enumerate(range(-44, sun_r, 9)))
+    defs = (f'<linearGradient id="sun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{PALE}"/>'
+            f'<stop offset=".45" stop-color="{ACCENT}"/><stop offset="1" stop-color="{VIOLET}"/></linearGradient>'
+            f'<mask id="sunm"><rect width="{w}" height="{h}" fill="#fff"/>{stripes}</mask>'
+            f'<clipPath id="floor"><path d="{ground}"/></clipPath>'
+            f'<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{BG}" stop-opacity="0"/>'
+            f'<stop offset="1" stop-color="{VIOLET}" stop-opacity=".22"/></linearGradient>')
+    # Mountains: two ridges, drawn as dark shapes with a dotted crest.
+    ridges = []
+    for layer, (base, amp, color, o) in enumerate([(hz - 26, 44, BG2, .55), (hz - 8, 30, "#0d0911", .8)]):
+        pts = []
+        for i in range(0, 121):
+            x = i * 10
+            centre = 1 - math.exp(-((x - 600) / 230) ** 2)
+            y = base - amp * centre * (.55 + .45 * math.sin(x * .021 + layer * 2) * math.sin(x * .007 + 1))
+            pts.append((x, y))
+        poly = " ".join(f"{x:.0f},{y:.1f}" for x, y in pts)
+        ridges.append(f'<polygon points="0,{hz} {poly} {w},{hz}" fill="{color}"/>')
+        ridges.append(dots([(x, y) for x, y in pts[::1]], 1.3, ACCENT, o))
+    # The floor: a grid of dots in perspective, brighter toward us, with a scan band rolling over it.
+    floor = []
+    for z in range(34, 9, -1):
+        y = hz + 900 / z
+        if y > h - 4:
+            break
+        near = (y - hz) / (h - hz)
+        floor.append(dots([(600 + X * 340 / z, y) for X in range(-60, 61) if 8 < 600 + X * 340 / z < w - 8],
+                          .6 + .9 * near, ACCENT, min(1, .15 + .9 * near)))
+    body = [space(w, h, rng, 110),
+            f'<rect width="{w}" height="{hz}" rx="{RADIUS}" fill="url(#sky)"/>',
+            f'<circle cx="600" cy="{sun_y}" r="{sun_r * 2.4:.0f}" fill="url(#glow)"/>',
+            f'<circle cx="600" cy="{sun_y}" r="{sun_r}" fill="url(#sun)" mask="url(#sunm)" filter="url(#bloom)"/>',
+            "".join(ridges),
+            f'<path d="{ground}" fill="{BG}"/>',
+            f'<path d="M24 {hz}H{w - 24}" stroke="{ACCENT}" stroke-opacity=".7" stroke-width="1.5" filter="url(#bloom)"/>',
+            f'<g clip-path="url(#floor)">{"".join(floor)}'
+            f'<rect class="scan" style="--sh:{h - hz + 80}px" x="0" y="{hz}" width="{w}" height="50" fill="url(#scanline)"/></g>',
+            f'<g transform="translate({(w - ww) / 2:.1f} 0)">{word}</g>',
+            text(600, 94, "blazexyz.com", BODY, ACCENT, "middle", spacing=2),
+            corners(w, h), frame(w, h)]
+    return svg(w, h, "".join(body), "Thanks for stopping by. blazexyz.com", defs)
 
 
 # --------------------------------------------------------------------------- content
@@ -480,8 +672,8 @@ def footer():
 ABOUT = [("role", "Board member, Exypnos One Corp."),
          ("focus", "QA · bug hunting · counsel"),
          ("building", "security tools for defenders"),
-         ("likes", "dot art · black holes · shaders · web design"),
-         ("also", "minecraft modding · she / her")]
+         ("likes", "dot art · black holes · shaders"),
+         ("also", "web design · minecraft modding")]
 
 STATS = [("4", "security tools"), ("148", "tests in CI"), ("0", "dependencies"), ("MIT", "licensed")]
 
@@ -491,29 +683,29 @@ PROJECTS = {
         lines=["Finds the one successful login hiding in", "thousands of failures, then rebuilds what",
                "the attacker did next as a timeline."],
         highlight="120 failures → 1 login → UID 0 backdoor",
-        tags=["SSH", "incidents", "ATT&CK"], footer="Python 3.11+ · 0 deps · 44 tests"),
+        tags=["SSH", "incidents", "ATT&CK"], footer=[("PY", "3.11+"), ("DEPS", "0"), ("TESTS", "44")]),
     "mailsleuth": dict(
-        layer="EMAIL · PHISHING TRIAGE", icon="mail", name="MailSleuth",
+        layer="EMAIL · PHISHING", icon="mail", name="MailSleuth",
         lines=["Phishing triage for SOC analysts: SPF,", "DKIM, DMARC, lookalike domains and links.",
                "Verdicts an analyst can defend."],
         highlight="CEO fraud passes DMARC, still flagged",
-        tags=["DMARC", "BEC", "IOCs", "web UI"], footer="Python 3.11+ · 0 deps · 39 tests"),
+        tags=["DMARC", "BEC", "IOCs", "web UI"], footer=[("PY", "3.11+"), ("DEPS", "0"), ("TESTS", "39")]),
     "portscan": dict(
         layer="NETWORK · EXPOSURE", icon="radar", name="portscan-fingerprint",
         lines=["Async scanner that names the software on", "each port, reads TLS certificates, and",
                "matches versions to CVEs by CPE name."],
         highlight="CPE: 39 real CVEs · keywords: 2",
-        tags=["asyncio", "X.509", "NVD", "ATT&CK"], footer="Python 3.10+ · 0 deps · 28 tests"),
+        tags=["asyncio", "X.509", "NVD", "ATT&CK"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "28")]),
     "pwaudit": dict(
         layer="CREDENTIALS · PRIVACY", icon="key", name="pwaudit",
         lines=["Prices passwords by what an attacker would", "really spend, and checks breaches while",
                "only 5 hash characters leave the machine."],
         highlight="P@ssw0rd2024: 78.8 bits raw, 10 real",
-        tags=["k-anonymity", "HIBP", "entropy"], footer="Python 3.10+ · 0 deps · 37 tests"),
+        tags=["k-anonymity", "HIBP", "entropy"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "37")]),
 }
 
 CHAIN = [("01", "INBOX", "mail", "MailSleuth", "is it phishing?"),
-         ("02", "CREDENTIALS", "key", "pwaudit", "guessable? breached?"),
+         ("02", "CREDS", "key", "pwaudit", "guessable? breached?"),
          ("03", "NETWORK", "radar", "portscan", "what's exposed?"),
          ("04", "HOST", "log", "authtrail", "did they get in?")]
 
@@ -521,10 +713,11 @@ BUILDING = {
     "site": dict(layer="WEB · GRAPHICS", icon="galaxy", name="blazexyz.com",
                  lines=["My site: a three.js black hole, galaxy and", "highway behind liquid-glass panels, with",
                         "dot-matrix type and live Discord presence."],
-                 tags=["Next.js", "R3F", "GLSL"]),
-    "shadowslave": dict(layer="GAME · MOD", icon="sword", name="Shadow Slave",
-                        lines=["A Fabric mod for Minecraft."],
-                        tags=["Fabric", "Minecraft"]),
+                 footer=[("BUILT WITH", "Next.js · R3F · GLSL")], cta="VISIT SITE ↗"),
+    "dreamfall": dict(layer="GAME · MOD", icon="sword", name="Dreamfall",
+                      lines=["A Fabric mod that brings the Shadow Slave", "novel to Minecraft: soul ranks, Aspects,",
+                             "Flaws and cinematic Awakenings."],
+                      footer=[("MC", "26.2"), ("LOADER", "Fabric"), ("JAVA", "25")], cta="IN PROGRESS"),
 }
 
 STACK = [("security", ["Python", "asyncio", "MITRE ATT&CK", "NVD / CPE", "Linux logs"]),
@@ -535,20 +728,22 @@ LINKS = {"link-site": ("blazexyz.com", "website", "◎"),
          "link-discord": ("discord", "say hi", "@"),
          "link-exypnos": ("exypnos one", "board member", "✦")}
 
+HEADERS = {"header-toolkit": ("01", "TOOLKIT", "four tools, four layers of defense"),
+           "header-chain": ("02", "ONE ATTACK", "four tools follow one intrusion"),
+           "header-building": ("03", "BUILDING", "graphics, the web, and games"),
+           "header-stack": ("04", "STACK", "the tools I reach for")}
+
 
 if __name__ == "__main__":
     OUT.mkdir(exist_ok=True)
     for old in OUT.glob("*.svg"):
         old.unlink()
-    files = {"banner.svg": banner(), "about.svg": about(ABOUT), "stats.svg": stats(STATS),
-             "chain.svg": chain(CHAIN), "stack.svg": stack(STACK), "footer.svg": footer(),
-             "header-toolkit.svg": header("SECURITY TOOLKIT", "four tools, each aimed at a different layer of defense"),
-             "header-chain.svg": header("ONE ATTACK, FOUR TOOLS", "together they follow a single intrusion"),
-             "header-building.svg": header("ALSO BUILDING", "graphics, the web, and games"),
-             "header-stack.svg": header("TOOLS I REACH FOR", "what these projects are made of")}
-    files.update({f"card-{k}.svg": project_card(v) for k, v in PROJECTS.items()})
-    files.update({f"build-{k}.svg": small_card(v) for k, v in BUILDING.items()})
-    files.update({f"{k}.svg": link_button(*v) for k, v in LINKS.items()})
+    files = {"banner.svg": banner(), "about.svg": about(ABOUT, STATS),
+             "chain.svg": chain(CHAIN), "stack.svg": stack(STACK), "footer.svg": footer()}
+    files.update({f"{k}.svg": header(*v) for k, v in HEADERS.items()})
+    files.update({f"card-{k}.svg": project_card(i % 2, v) for i, (k, v) in enumerate(PROJECTS.items())})
+    files.update({f"build-{k}.svg": small_card(i % 2, v) for i, (k, v) in enumerate(BUILDING.items())})
+    files.update({f"{k}.svg": link_button(i, *v) for i, (k, v) in enumerate(LINKS.items())})
     for name, content in files.items():
         (OUT / name).write_text(content, encoding="utf-8")
     for f in sorted(OUT.glob("*.svg")):
