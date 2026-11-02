@@ -802,7 +802,7 @@ MORE = {
         layer="SECRETS · GIT HISTORY", icon="timeline", name="Secret Time Machine",
         lines=["Finds every secret ever committed, on every", "branch and tag, and shows how long each",
                "one was exposed, as a timeline report."],
-        highlight="deleted ≠ gone: 4 of 8 still recoverable",
+        highlight="deleted ≠ gone: 4 removed keys still in history",
         tags=["git", "DevSecOps", "CI"], footer=[("PY", "3.9+"), ("DEPS", "0"), ("TESTS", "12")]),
     "blast-radius": dict(
         layer="SUPPLY CHAIN · DEPENDENCIES", icon="rings", name="Blast Radius",
@@ -832,7 +832,7 @@ MORE = {
         layer="DEV TOOLS · TERMINAL", icon="terminal", name="termreel",
         lines=["Records terminal sessions and turns them", "into small animated SVGs that play",
                "right inside a GitHub README."],
-        highlight="53.8 KB → 26.8 KB with row chaining",
+        highlight="sample SVG: 53.8 KB → 26.8 KB",
         tags=["VT emulator", "SVG", "CSS"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "35")]),
 }
 
