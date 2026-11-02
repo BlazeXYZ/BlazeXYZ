@@ -7,7 +7,7 @@
 <p>
 <a href="https://blazexyz.com"><img src="assets/banner.svg" width="100%" alt="BLAZEXYZ, in dot lettering, beside a black hole. QA, bug hunting and security tooling. I test things until they break, then help fix them."></a>
 <a href="https://blazexyz.com"><img src="assets/link-site.svg" width="33.33%" alt="Website: blazexyz.com"></a><a href="https://discord.com/users/766780065198899210"><img src="assets/link-discord.svg" width="33.33%" alt="Discord: say hi"></a><a href="https://exypnos.one/christian-block"><img src="assets/link-exypnos.svg" width="33.33%" alt="Exypnos One: board member"></a>
-<img src="assets/about.svg" width="100%" alt="About. Role: Board member, Exypnos One Corp. Focus: QA, bug hunting, counsel. Building: security tools for defenders. Likes: dot art, black holes, shaders. Also: web design, Minecraft modding. 4 security tools, 148 tests in CI, 0 dependencies, MIT licensed.">
+<img src="assets/about.svg" width="100%" alt="About. Role: Board member, Exypnos One Corp. Focus: QA, bug hunting, counsel. Building: security tools for defenders. Likes: dot art, black holes, shaders. Also: web design, Minecraft modding. 10 public projects, 7 security and privacy tools, 219 unit tests, MIT licensed.">
 </p>
 
 <p>
@@ -21,10 +21,17 @@
 <img src="assets/chain.svg" width="100%" alt="Attack chain: a phishing email (MailSleuth), then a stolen or weak password (pwaudit), then an exposed service (portscan-fingerprint), then a login on the server (authtrail)">
 </p>
 
+<p>
+<img src="assets/header-more.svg" width="100%" alt="03. More: secrets, supply chain, privacy, builder tools">
+<a href="https://github.com/BlazeXYZ/secret-time-machine"><img src="assets/card-secret-time-machine.svg" width="50%" alt="Secret Time Machine: finds every secret ever committed, on every branch and tag, and shows how long each one was exposed"></a><a href="https://github.com/BlazeXYZ/blast-radius"><img src="assets/card-blast-radius.svg" width="50%" alt="Blast Radius: resolves your full npm or Python dependency tree in the browser and scores every package's risk"></a>
+<a href="https://github.com/BlazeXYZ/fingerprint-mirror"><img src="assets/card-fingerprint-mirror.svg" width="50%" alt="Fingerprint Mirror: everything a site can learn about your browser without a cookie, and how unique that makes you"></a><a href="https://github.com/BlazeXYZ/regex-replay"><img src="assets/card-regex-replay.svg" width="50%" alt="Regex Replay: a from-scratch backtracking regex engine you can step through to see where catastrophic backtracking starts"></a>
+<a href="https://github.com/BlazeXYZ/pathfinding-playground"><img src="assets/card-pathfinding-playground.svg" width="50%" alt="Pathfinder Playground: races Dijkstra, A* and bidirectional search side by side on real OpenStreetMap streets"></a><a href="https://github.com/BlazeXYZ/termreel"><img src="assets/card-termreel.svg" width="50%" alt="termreel: records terminal sessions as small animated SVGs that play inside a GitHub README"></a>
+</p>
+
 </div>
 
 <details>
-<summary><b>Project details and live CI status</b></summary>
+<summary><b>All ten projects, with live CI status</b></summary>
 <br>
 
 | Project | Layer | The interesting part | CI |
@@ -33,6 +40,12 @@
 | [**MailSleuth**](https://github.com/BlazeXYZ/mailsleuth) | Email | Flags a CEO-fraud email that passes SPF, DKIM *and* DMARC, because the attacker owns the lookalike domain | [![tests](https://github.com/BlazeXYZ/mailsleuth/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/mailsleuth/actions/workflows/tests.yml) |
 | [**portscan-fingerprint**](https://github.com/BlazeXYZ/portscan-fingerprint) | Network | CPE matching found 39 real CVEs for OpenSSH 8.2p1 where keyword search found 2; includes a hand-written X.509 parser | [![tests](https://github.com/BlazeXYZ/portscan-fingerprint/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/portscan-fingerprint/actions/workflows/tests.yml) |
 | [**pwaudit**](https://github.com/BlazeXYZ/pwaudit) | Credentials | Prices passwords by what an attacker would spend; breach checks send only 5 of 40 hash characters | [![tests](https://github.com/BlazeXYZ/pwaudit/actions/workflows/tests.yml/badge.svg)](https://github.com/BlazeXYZ/pwaudit/actions/workflows/tests.yml) |
+| [**Secret Time Machine**](https://github.com/BlazeXYZ/secret-time-machine) | Secrets | Replays every commit on every ref; in its demo repo, 4 of 8 "deleted" secrets are still recoverable from history | [![secret-scan](https://github.com/BlazeXYZ/secret-time-machine/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/BlazeXYZ/secret-time-machine/actions/workflows/secret-scan.yml) |
+| [**Blast Radius**](https://github.com/BlazeXYZ/blast-radius) | Supply chain | Flags the 2018 `event-stream` attack even though npm unpublished it; `node-sass` alone drags in 196 packages | 15 tests, `npm test` |
+| [**Fingerprint Mirror**](https://github.com/BlazeXYZ/fingerprint-mirror) | Privacy | 20 collectors and a stable hash that survives private windows; detects browsers that randomize canvas and audio | no network calls |
+| [**Regex Replay**](https://github.com/BlazeXYZ/regex-replay) | Parsers | A hand-written backtracking engine, checked against `RegExp` on 4,000 fuzzed cases, that shows ReDoS step by step | [![tests](https://github.com/BlazeXYZ/regex-replay/actions/workflows/test.yml/badge.svg)](https://github.com/BlazeXYZ/regex-replay/actions/workflows/test.yml) |
+| [**Pathfinder Playground**](https://github.com/BlazeXYZ/pathfinding-playground) | Algorithms | Six algorithms on real streets; every optimal one matches Dijkstra on 100 random routes | 9 tests, `npm test` |
+| [**termreel**](https://github.com/BlazeXYZ/termreel) | Dev tools | Its own VT emulator and a CSS filmstrip; row chaining halved the sample SVG | 35 tests |
 
 </details>
 
@@ -51,13 +64,13 @@
 <div align="center">
 
 <p>
-<img src="assets/header-building.svg" width="100%" alt="03. Building: graphics, the web, and games">
+<img src="assets/header-building.svg" width="100%" alt="04. Building: graphics, the web, and games">
 <a href="https://blazexyz.com"><img src="assets/build-site.svg" width="50%" alt="blazexyz.com: my site, a three.js black hole, galaxy and highway behind liquid-glass panels, with dot-matrix type and live Discord presence"></a><img src="assets/build-dreamfall.svg" width="50%" alt="Dreamfall: a Fabric mod that brings the Shadow Slave novel to Minecraft, with soul ranks, Aspects, Flaws and cinematic Awakenings. In progress.">
 </p>
 
 <p>
-<img src="assets/header-stack.svg" width="100%" alt="04. Stack: the tools I reach for">
-<img src="assets/stack.svg" width="100%" alt="Security: Python, asyncio, MITRE ATT&CK, NVD and CPE, Linux logs. Web and graphics: TypeScript, Next.js, React, three.js, GLSL. Quality: unittest, Vitest, GitHub Actions, mutation checks.">
+<img src="assets/header-stack.svg" width="100%" alt="05. Stack: the tools I reach for">
+<img src="assets/stack.svg" width="100%" alt="Security: Python, asyncio, MITRE ATT&CK, NVD and CPE, OSV, git internals. Web and graphics: TypeScript, Next.js, three.js, GLSL, d3, Leaflet. Quality: unittest, node:test, Vitest, fuzzing, GitHub Actions.">
 </p>
 
 <a href="https://blazexyz.com"><img src="assets/footer.svg" width="100%" alt="Thanks for stopping by. blazexyz.com"></a>

@@ -436,8 +436,100 @@ def icon_sword(cx, cy, s=1.0):
     return f'<g filter="url(#bloom)">{dots(blade, 2.6 * s, ACCENT)}{dots(hilt, 2.6 * s, VIOLET)}</g>'
 
 
+def icon_timeline(cx, cy, s=1.0):
+    """Secret Time Machine: exposure bars, one still live and pulsing to the right edge."""
+    out = [dots_on(line_pts(cx - 56 * s, cy + 42 * s, cx + 56 * s, cy + 42 * s, 6 * s, .35), 1.3 * s, LO)]
+    for i, (x0, x1, tail) in enumerate([(-50, -10, 18), (-34, 8, 0), (-20, 56, 0), (-4, 22, 26)]):
+        y = cy - 30 * s + i * 20 * s
+        live = x1 == 56
+        g = dots_on(line_pts(cx + x0 * s, y, cx + x1 * s, y, 5 * s), (2.2 if live else 1.8) * s,
+                    VIOLET if live else ACCENT)
+        out.append(f'<g class="pulse" filter="url(#bloom)">{g}</g>' if live else g)
+        if tail:
+            out.append(dots_on(line_pts(cx + (x1 + 6) * s, y, cx + (x1 + tail) * s, y, 7 * s, .35), 1.3 * s))
+    return "".join(out)
+
+
+def icon_rings(cx, cy, s=1.0):
+    """Blast Radius: dependency rings by depth, with a few risky packages glowing."""
+    rng = random.Random(29)
+    pts = []
+    for radius, n in ((18, 6), (34, 11), (50, 16)):
+        for k in range(n):
+            a = 2 * math.pi * k / n + radius
+            pts.append((cx + radius * s * math.cos(a), cy + radius * s * math.sin(a), rng.uniform(.4, .9)))
+    rings = "".join(f'<circle cx="{cx}" cy="{cy}" r="{r * s:.1f}" fill="none" stroke="{ACCENT}" stroke-opacity=".18" '
+                    f'stroke-dasharray="2 5"/>' for r in (18, 34, 50))
+    risky = "".join(f'<circle cx="{cx + bx * s:.1f}" cy="{cy + by * s:.1f}" r="{3.6 * s:.1f}" fill="{VIOLET}" class="pulse" '
+                    f'style="animation-delay:{d}s" filter="url(#bloom)"/>'
+                    for bx, by, d in [(30, -14, 0), (-44, 22, 1.1), (12, 47, 2.2)])
+    core = f'<circle cx="{cx}" cy="{cy}" r="{5 * s:.1f}" fill="{INK}" filter="url(#bloom)"/>'
+    return rings + dots_on(pts, 2 * s) + risky + core
+
+
+def icon_print(cx, cy, s=1.0):
+    """Fingerprint Mirror: dotted ridges of a fingerprint."""
+    pts = []
+    for i, r in enumerate(range(8, 56, 8)):
+        n = int(math.pi * r * s / 6) + 2
+        for k in range(n + 1):
+            a = math.pi * (1.05 + .9 * k / n) if i % 2 else math.pi * (1.0 + 1.0 * k / n)
+            pts.append((cx + r * s * math.cos(a), cy + 12 * s + 1.15 * r * s * math.sin(a), 1 - i * .1))
+        pts += line_pts(cx - r * s, cy + 12 * s, cx - r * s * .9, cy + (30 + i * 3) * s, 6 * s, .6)
+    return f'<g filter="url(#bloom)">{dots_on(pts, 1.7 * s)}</g>'
+
+
+def icon_sawtooth(cx, cy, s=1.0):
+    """Regex Replay: the timeline sawtooth that catastrophic backtracking draws."""
+    pts, x = [], cx - 58 * s
+    for tooth, height in enumerate([20, 28, 36, 44, 52]):
+        n = 4 + tooth
+        for k in range(n):
+            pts.append((x + k * 4.2 * s, cy + 28 * s - height * s * k / (n - 1), .5 + .1 * tooth))
+        x += n * 4.2 * s
+        pts += line_pts(x - 4.2 * s, cy - (height - 28) * s, x - 4.2 * s, cy + 28 * s, 6 * s, .25)
+    base = dots_on(line_pts(cx - 58 * s, cy + 36 * s, cx + 58 * s, cy + 36 * s, 6 * s, .3), 1.2 * s, LO)
+    head = (f'<circle cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="{3.6 * s:.1f}" fill="{VIOLET}" class="pulse" '
+            f'filter="url(#bloom)"/>')
+    return base + dots_on(pts, 1.8 * s) + head
+
+
+def icon_route(cx, cy, s=1.0):
+    """Pathfinder: a street grid, the area a search explored, and the route through it."""
+    grid = []
+    for gx in range(-48, 49, 16):
+        for gy in range(-40, 41, 16):
+            d = math.hypot(gx + 32, gy - 24) / 90
+            grid.append((cx + gx * s, cy + gy * s, max(.15, .9 - d)))
+    route = (line_pts(cx - 32 * s, cy + 24 * s, cx - 32 * s, cy - 8 * s, 4 * s)
+             + line_pts(cx - 32 * s, cy - 8 * s, cx + 16 * s, cy - 8 * s, 4 * s)
+             + line_pts(cx + 16 * s, cy - 8 * s, cx + 32 * s, cy - 24 * s, 4 * s))
+    pins = (f'<circle cx="{cx - 32 * s:.1f}" cy="{cy + 24 * s:.1f}" r="{4.5 * s:.1f}" fill="#3ddc84"/>'
+            f'<circle cx="{cx + 32 * s:.1f}" cy="{cy - 24 * s:.1f}" r="{4.5 * s:.1f}" fill="{VIOLET}" class="pulse" '
+            f'filter="url(#bloom)"/>')
+    return dots_on(grid, 1.8 * s) + f'<g filter="url(#bloom)">{dots_on(route, 1.9 * s, INK)}</g>' + pins
+
+
+def icon_terminal(cx, cy, s=1.0):
+    """termreel: a terminal window with a prompt and a blinking cursor."""
+    w, h = 104 * s, 72 * s
+    x0, y0 = cx - w / 2, cy - h / 2
+    pts = (line_pts(x0, y0, x0 + w, y0, 6 * s) + line_pts(x0, y0 + h, x0 + w, y0 + h, 6 * s)
+           + line_pts(x0, y0, x0, y0 + h, 6 * s) + line_pts(x0 + w, y0, x0 + w, y0 + h, 6 * s)
+           + line_pts(x0, y0 + 14 * s, x0 + w, y0 + 14 * s, 6 * s, .4))
+    lights = "".join(f'<circle cx="{x0 + (10 + 9 * i) * s:.1f}" cy="{y0 + 7 * s:.1f}" r="{2.4 * s:.1f}" fill="{c}"/>'
+                     for i, c in enumerate([VIOLET, ACCENT, INK]))
+    lines = (text(f"{x0 + 9 * s:.0f}", f"{y0 + 34 * s:.0f}", "❯ reel", f"{13 * s:.1f}", ACCENT)
+             + dots_on(line_pts(x0 + 9 * s, y0 + 46 * s, x0 + 70 * s, y0 + 46 * s, 5 * s, .5), 1.5 * s, MID)
+             + text(f"{x0 + 9 * s:.0f}", f"{y0 + 64 * s:.0f}", "❯", f"{13 * s:.1f}", ACCENT)
+             + f'<rect x="{x0 + 21 * s:.1f}" y="{y0 + 54 * s:.1f}" width="{7 * s:.1f}" height="{12 * s:.1f}" '
+               f'fill="{INK}" class="blink"/>')
+    return dots_on(pts, 1.5 * s) + lights + lines
+
+
 ICONS = {"radar": icon_radar, "mail": icon_mail, "key": icon_key, "log": icon_log,
-         "galaxy": icon_galaxy, "sword": icon_sword}
+         "galaxy": icon_galaxy, "sword": icon_sword, "timeline": icon_timeline, "rings": icon_rings,
+         "print": icon_print, "sawtooth": icon_sawtooth, "route": icon_route, "terminal": icon_terminal}
 
 
 # --------------------------------------------------------------------------- panels
@@ -675,7 +767,7 @@ ABOUT = [("role", "Board member, Exypnos One Corp."),
          ("likes", "dot art · black holes · shaders"),
          ("also", "web design · minecraft modding")]
 
-STATS = [("4", "security tools"), ("148", "tests in CI"), ("0", "dependencies"), ("MIT", "licensed")]
+STATS = [("10", "public projects"), ("7", "security & privacy"), ("219", "unit tests"), ("MIT", "licensed")]
 
 PROJECTS = {
     "authtrail": dict(
@@ -704,6 +796,46 @@ PROJECTS = {
         tags=["k-anonymity", "HIBP", "entropy"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "37")]),
 }
 
+# The newer six: three more security and privacy tools, three engineering projects.
+MORE = {
+    "secret-time-machine": dict(
+        layer="SECRETS · GIT HISTORY", icon="timeline", name="Secret Time Machine",
+        lines=["Finds every secret ever committed, on every", "branch and tag, and shows how long each",
+               "one was exposed, as a timeline report."],
+        highlight="deleted ≠ gone: 4 of 8 still recoverable",
+        tags=["git", "DevSecOps", "CI"], footer=[("PY", "3.9+"), ("DEPS", "0"), ("TESTS", "12")]),
+    "blast-radius": dict(
+        layer="SUPPLY CHAIN · DEPENDENCIES", icon="rings", name="Blast Radius",
+        lines=["Resolves your full npm or Python tree in", "the browser, scores every package's risk,",
+               "and shows which choice pulled it in."],
+        highlight="flags event-stream even though npm 404s",
+        tags=["OSV", "PEP 440", "CVSS", "d3"], footer=[("RUNS", "browser"), ("BUILD", "none"), ("TESTS", "15")]),
+    "fingerprint-mirror": dict(
+        layer="PRIVACY · TRACKING", icon="print", name="Fingerprint Mirror",
+        lines=["Everything a site can learn about your", "browser without a cookie, and how unique",
+               "that makes you, in bits."],
+        highlight="same ID in a private window",
+        tags=["canvas", "WebGL", "entropy"], footer=[("RUNS", "browser"), ("DEPS", "0"), ("NETWORK", "none")]),
+    "regex-replay": dict(
+        layer="PARSERS · ReDoS", icon="sawtooth", name="Regex Replay",
+        lines=["A from-scratch backtracking regex engine", "you can step through, to see exactly",
+               "where catastrophic backtracking starts."],
+        highlight="checked vs RegExp on 4,000 fuzz cases",
+        tags=["regex", "ReDoS", "fuzzing"], footer=[("FILES", "1 HTML"), ("DEPS", "0"), ("CI", "node 22")]),
+    "pathfinding-playground": dict(
+        layer="ALGORITHMS · MAPS", icon="route", name="Pathfinder Playground",
+        lines=["Races Dijkstra, A*, bidirectional search", "and more side by side on real",
+               "OpenStreetMap streets."],
+        highlight="all optimal on 100 random routes",
+        tags=["graphs", "A*", "Leaflet"], footer=[("RUNS", "browser"), ("BUILD", "none"), ("TESTS", "9")]),
+    "termreel": dict(
+        layer="DEV TOOLS · TERMINAL", icon="terminal", name="termreel",
+        lines=["Records terminal sessions and turns them", "into small animated SVGs that play",
+               "right inside a GitHub README."],
+        highlight="53.8 KB → 26.8 KB with row chaining",
+        tags=["VT emulator", "SVG", "CSS"], footer=[("PY", "3.10+"), ("DEPS", "0"), ("TESTS", "35")]),
+}
+
 CHAIN = [("01", "INBOX", "mail", "MailSleuth", "is it phishing?"),
          ("02", "CREDS", "key", "pwaudit", "guessable? breached?"),
          ("03", "NETWORK", "radar", "portscan", "what's exposed?"),
@@ -720,9 +852,9 @@ BUILDING = {
                       footer=[("MC", "26.2"), ("LOADER", "Fabric"), ("JAVA", "25")], cta="IN PROGRESS"),
 }
 
-STACK = [("security", ["Python", "asyncio", "MITRE ATT&CK", "NVD / CPE", "Linux logs"]),
-         ("web & graphics", ["TypeScript", "Next.js", "React", "three.js", "GLSL"]),
-         ("quality", ["unittest", "Vitest", "GitHub Actions", "mutation checks"])]
+STACK = [("security", ["Python", "asyncio", "MITRE ATT&CK", "NVD / CPE", "OSV", "git internals"]),
+         ("web & graphics", ["TypeScript", "Next.js", "three.js", "GLSL", "d3", "Leaflet"]),
+         ("quality", ["unittest", "node:test", "Vitest", "fuzzing", "GitHub Actions"])]
 
 LINKS = {"link-site": ("blazexyz.com", "website", "◎"),
          "link-discord": ("discord", "say hi", "@"),
@@ -730,8 +862,9 @@ LINKS = {"link-site": ("blazexyz.com", "website", "◎"),
 
 HEADERS = {"header-toolkit": ("01", "TOOLKIT", "four tools, four layers of defense"),
            "header-chain": ("02", "ONE ATTACK", "four tools follow one intrusion"),
-           "header-building": ("03", "BUILDING", "graphics, the web, and games"),
-           "header-stack": ("04", "STACK", "the tools I reach for")}
+           "header-more": ("03", "MORE", "secrets, supply chain, privacy, builder tools"),
+           "header-building": ("04", "BUILDING", "graphics, the web, and games"),
+           "header-stack": ("05", "STACK", "the tools I reach for")}
 
 
 if __name__ == "__main__":
@@ -742,6 +875,7 @@ if __name__ == "__main__":
              "chain.svg": chain(CHAIN), "stack.svg": stack(STACK), "footer.svg": footer()}
     files.update({f"{k}.svg": header(*v) for k, v in HEADERS.items()})
     files.update({f"card-{k}.svg": project_card(i % 2, v) for i, (k, v) in enumerate(PROJECTS.items())})
+    files.update({f"card-{k}.svg": project_card(i % 2, v) for i, (k, v) in enumerate(MORE.items())})
     files.update({f"build-{k}.svg": small_card(i % 2, v) for i, (k, v) in enumerate(BUILDING.items())})
     files.update({f"{k}.svg": link_button(i, *v) for i, (k, v) in enumerate(LINKS.items())})
     for name, content in files.items():
